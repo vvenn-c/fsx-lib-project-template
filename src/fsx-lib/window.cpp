@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <string>
 #include <SDL3/SDL.h>
 
 #include "fsx.hpp"
@@ -17,12 +16,7 @@ void fsx::Window::open() {
 
     }
 
-    SDL_WindowFlags flags = SDL_WINDOW_VULKAN;
-    if (resizable) flags = flags | SDL_WINDOW_RESIZABLE;
-    if (fullscreen) flags = flags | SDL_WINDOW_FULLSCREEN;
-    if (borderless) flags = flags | SDL_WINDOW_BORDERLESS;
-
-    windowObject_ = SDL_CreateWindow(title, width, height, flags);
+    windowObject_ = SDL_CreateWindow(title, width, height, SDL_WINDOW_VULKAN);
 
     if (!windowObject_)
         Utils::showWarning("failed to create SDL window object for window \"{}\".", title);
@@ -51,13 +45,30 @@ void fsx::Window::pollEvents(const SDL_Event event) {
 
     }
 
+    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE) resizable = true;
+    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN) fullscreen = true;
+    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS) borderless = true;
+
 }
 
 void fsx::Window::applyProperties() {
 
-    // TODO: only call this if it was changed. (perhaps by comparing to the swapchain size?)
-    SDL_SetWindowTitle(windowObject_, title);
-    SDL_SetWindowSize(windowObject_, width, height);
+    if (title != SDL_GetWindowTitle(windowObject_))
+        SDL_SetWindowTitle(windowObject_, title);
+
+    int w, h;
+    SDL_GetWindowSizeInPixels(windowObject_, &w, &h);
+    if (width != w || height != h)
+        SDL_SetWindowSize(windowObject_, width, height);
+
+    if (resizable != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE))
+        SDL_SetWindowResizable(windowObject_, resizable);
+
+    if (fullscreen != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN))
+        SDL_SetWindowFullscreen(windowObject_, fullscreen);
+
+    if (fullscreen != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS))
+        SDL_SetWindowBordered(windowObject_, !borderless);
 
 }
 

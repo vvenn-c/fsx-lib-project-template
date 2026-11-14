@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <stdexcept>
+#include <vulkan/vk_enum_string_helper.h>
 
 class fsx::Utils {
     

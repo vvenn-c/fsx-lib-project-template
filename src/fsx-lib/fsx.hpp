@@ -1,11 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <SDL3/SDL.h>
-
 namespace fsx {
 
     class Utils;
+    class Input;
     class Window;
     class Core;
     class Shaders;
@@ -23,6 +21,7 @@ namespace fsx {
 };
 
 #include "utils.hpp"
+#include "input.hpp"
 #include "window.hpp"
 #include "core.hpp"
 
