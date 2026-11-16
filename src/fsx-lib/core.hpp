@@ -1,5 +1,6 @@
 #pragma once
 
+#include <print>
 #include <vulkan/vulkan.h>
 
 class fsx::Core {
@@ -20,6 +21,6 @@ private:
     void render();
 
     // vulkan init helpers
-    VkInstance createInstance();
+    bool createInstance();
 
 };

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <SDL3/SDL.h>
+
 namespace fsx {
 
     class Utils;
@@ -16,6 +19,7 @@ namespace fsx {
     void exit();
 
     inline bool shouldAppClose = false;
+    inline std::vector<SDL_Event> events; // i think i want to make sure this is always accecible from the app
     inline int run();
 
 };

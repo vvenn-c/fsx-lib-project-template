@@ -35,7 +35,7 @@ target_link_libraries(${PROJECT_NAME}
 
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
-) 
+)
 
 target_sources(${PROJECT_NAME}
     PRIVATE

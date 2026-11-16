@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <SDL3/SDL.h>
 
 #include "fsx.hpp"
@@ -11,144 +10,154 @@ public:
 
     Input() = delete;
 
-    enum class Keys {
+    enum class Key : uint8_t {
 
-        KEY_UNKNOWN = 0,
+        UNKNOWN = 0,
 
-        KEY_A = 4,
-        KEY_B = 5,
-        KEY_C = 6,
-        KEY_D = 7,
-        KEY_E = 8,
-        KEY_F = 9,
-        KEY_G = 10,
-        KEY_H = 11,
-        KEY_I = 12,
-        KEY_J = 13,
-        KEY_K = 14,
-        KEY_L = 15,
-        KEY_M = 16,
-        KEY_N = 17,
-        KEY_O = 18,
-        KEY_P = 19,
-        KEY_Q = 20,
-        KEY_R = 21,
-        KEY_S = 22,
-        KEY_T = 23,
-        KEY_U = 24,
-        KEY_V = 25,
-        KEY_W = 26,
-        KEY_X = 27,
-        KEY_Y = 28,
-        KEY_Z = 29,
+        A = 4,
+        B = 5,
+        C = 6,
+        D = 7,
+        E = 8,
+        F = 9,
+        G = 10,
+        H = 11,
+        I = 12,
+        J = 13,
+        K = 14,
+        L = 15,
+        M = 16,
+        N = 17,
+        O = 18,
+        P = 19,
+        Q = 20,
+        R = 21,
+        S = 22,
+        T = 23,
+        U = 24,
+        V = 25,
+        W = 26,
+        X = 27,
+        Y = 28,
+        Z = 29,
 
-        KEY_1 = 30,
-        KEY_2 = 31,
-        KEY_3 = 32,
-        KEY_4 = 33,
-        KEY_5 = 34,
-        KEY_6 = 35,
-        KEY_7 = 36,
-        KEY_8 = 37,
-        KEY_9 = 38,
-        KEY_0 = 39,
+        NUM_1 = 30,
+        NUM_2 = 31,
+        NUM_3 = 32,
+        NUM_4 = 33,
+        NUM_5 = 34,
+        NUM_6 = 35,
+        NUM_7 = 36,
+        NUM_8 = 37,
+        NUM_9 = 38,
+        NUM_0 = 39,
 
-        KEY_RETURN = 40,
-        KEY_ESCAPE = 41,
-        KEY_BACKSPACE = 42,
-        KEY_TAB = 43,
-        KEY_SPACE = 44,
+        RETURN = 40,
+        ESCAPE = 41,
+        BACKSPACE = 42,
+        TAB = 43,
+        SPACE = 44,
 
-        KEY_MINUS = 45,
-        KEY_EQUALS = 46,
-        KEY_LEFTBRACKET = 47,
-        KEY_RIGHTBRACKET = 48,
-        KEY_BACKSLASH = 49,
-        KEY_SEMICOLON = 51,
-        KEY_APOSTROPHE = 52,
-        KEY_GRAVE = 53,
-        KEY_COMMA = 54,
-        KEY_PERIOD = 55,
-        KEY_SLASH = 56,
+        MINUS = 45,
+        EQUALS = 46,
+        LEFTBRACKET = 47,
+        RIGHTBRACKET = 48,
+        BACKSLASH = 49,
+        SEMICOLON = 51,
+        APOSTROPHE = 52,
+        GRAVE = 53,
+        COMMA = 54,
+        PERIOD = 55,
+        SLASH = 56,
 
-        KEY_CAPSLOCK = 57,
+        CAPSLOCK = 57,
 
-        KEY_F1 = 58,
-        KEY_F2 = 59,
-        KEY_F3 = 60,
-        KEY_F4 = 61,
-        KEY_F5 = 62,
-        KEY_F6 = 63,
-        KEY_F7 = 64,
-        KEY_F8 = 65,
-        KEY_F9 = 66,
-        KEY_F10 = 67,
-        KEY_F11 = 68,
-        KEY_F12 = 69,
+        F1 = 58,
+        F2 = 59,
+        F3 = 60,
+        F4 = 61,
+        F5 = 62,
+        F6 = 63,
+        F7 = 64,
+        F8 = 65,
+        F9 = 66,
+        F10 = 67,
+        F11 = 68,
+        F12 = 69,
 
-        KEY_PRINTSCREEN = 70,
+        PRINTSCREEN = 70,
 
-        KEY_HOME = 74,
-        KEY_PAGEUP = 75,
-        KEY_DELETE = 76,
-        KEY_END = 77,
-        KEY_PAGEDOWN = 78,
-        KEY_RIGHT = 79,
-        KEY_LEFT = 80,
-        KEY_DOWN = 81,
-        KEY_UP = 82,
+        HOME = 74,
+        PAGEUP = 75,
+        DELETE = 76,
+        END = 77,
+        PAGEDOWN = 78,
+        RIGHT = 79,
+        LEFT = 80,
+        DOWN = 81,
+        UP = 82,
 
-        KEY_MUTE = 127,
-        KEY_VOLUMEUP = 128,
-        KEY_VOLUMEDOWN = 129,
+        MUTE = 127,
+        VOLUMEUP = 128,
+        VOLUMEDOWN = 129,
 
-        KEY_LCTRL = 224,
-        KEY_LSHIFT = 225,
-        KEY_LALT = 226,
-        KEY_LGUI = 227,
-        KEY_RCTRL = 228,
-        KEY_RSHIFT = 229,
-        KEY_RALT = 230,
-        KEY_RGUI = 231
+        LCTRL = 224,
+        LSHIFT = 225,
+        LALT = 226,
+        LGUI = 227,
+        RCTRL = 228,
+        RSHIFT = 229,
+        RALT = 230,
+        RGUI = 231,
+
+        NUMLOCK_CLEAR = 83,
+
+        NUMPAD_DIVIDE = 84,
+        NUMPAD_MULTIPLY = 85,
+        NUMPAD_MINUS = 86,
+        NUMPAD_PLUS = 87,
+        NUMPAD_ENTER = 88,
+        NUMPAD_1 = 89,
+        NUMPAD_2 = 90,
+        NUMPAD_3 = 91,
+        NUMPAD_4 = 92,
+        NUMPAD_5 = 93,
+        NUMPAD_6 = 94,
+        NUMPAD_7 = 95,
+        NUMPAD_8 = 96,
+        NUMPAD_9 = 97,
+        NUMPAD_0 = 98,
+        NUMPAD_PERIOD = 99
 
     };
 
-    static bool keyPressed(Keys key) {
+    static bool keyPressed(Key key);
+    static bool getKeyState(Key key);
+    static bool keyReleased(Key key);
 
-        int scancode = static_cast<int>(key);
-        if (lastKeyStates[scancode] == false && keyStates[scancode] == true)
-            return true;
-        else return false;
+    enum class Mouse : uint8_t {
 
-    }
+        LEFT   = 1,
+        MIDDLE = 2,
+        RIGHT  = 3,
+        X1     = 4,
+        X2     = 5
 
-    static bool keyHeld(Keys key) {
-        return keyStates[static_cast<int>(key)];
     };
 
-    static bool keyReleased(Keys key) {
+    static bool mouseButtonPressed(Mouse button);
+    static bool getMouseState(Mouse button);
+    static bool mouseButtonReleased(Mouse button);
 
-        int scancode = static_cast<int>(key);
-        if (lastKeyStates[scancode] == true && keyStates[scancode] == false)
-            return true;
-        else return false;
-
-    }
+    // TODO: handle mouse scrolling
+    // needa figure out how that works tho
+    // also mouse position.
 
 private:
 
+    friend class Core;
 
-protected: friend class Core;
-
-    static inline std::vector<bool> lastKeyStates;
     static inline const bool *keyStates;
-
-    static void updateLastKeyStates() {
-
-        lastKeyStates.clear();
-        for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
-            lastKeyStates.push_back(keyStates[i]);
-
-    }
+    static inline SDL_MouseButtonFlags mouseStates;
 
 };
