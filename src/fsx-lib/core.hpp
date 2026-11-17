@@ -15,15 +15,13 @@ public:
 
 private:
 
-    const const char *appName_ = "fsx-lib application";
-    const uint32_t vulkanVersion_ = VK_API_VERSION_1_4;
+    static inline const char *appName_;
+    static inline uint32_t vulkanVersion_;
 
-    VkInstance vulkanInstance_;
-
-    void render();
+    static inline VkInstance vulkanInstance_;
 
     // vulkan init helpers
-    bool createInstance();
+    static bool createInstance();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

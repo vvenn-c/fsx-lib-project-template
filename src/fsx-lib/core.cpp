@@ -1,5 +1,4 @@
 #include <vector>
-
 #include <vulkan/vulkan.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -21,7 +20,7 @@ void fsx::Core::initSDL() {
 
 void fsx::Core::initVulkan() {
 
-    if (!fsx::Core::createInstance())
+    if (!createInstance())
         throw std::runtime_error("failed to create vulkan instance");
 
 }
@@ -73,6 +72,9 @@ void fsx::Core::cleanup() {
 }
 
 bool fsx::Core::createInstance() {
+
+    Core::appName_ = "fsx-lib application";
+    Core::vulkanVersion_ = VK_API_VERSION_1_4;
 
     VkApplicationInfo appInfo {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,

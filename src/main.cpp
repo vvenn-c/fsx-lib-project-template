@@ -5,9 +5,6 @@ Window window;
 
 void fsx::init() {
 
-    Core::setAppName("pog app");
-    Core::setVulkanVersion(VK_VERSION_1_4);
-
     window.title = "pog";
     window.open();
 

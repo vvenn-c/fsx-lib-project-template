@@ -33,6 +33,8 @@ target_link_libraries(${PROJECT_NAME}
         SDL3
 )
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE VK_NO_PROTOTYPES)
+
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
 )
