@@ -29,7 +29,7 @@ public:
     // TODO: the window object will own the spawnchain
     // since swapchains are window specific.
 
-protected: 
+private: 
 
     friend class Core;
 

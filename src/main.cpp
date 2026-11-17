@@ -1,8 +1,12 @@
 #include "fsx-lib/fsx.hpp"
+using namespace fsx;
 
-fsx::Window window;
+Window window;
 
 void fsx::init() {
+
+    Core::setAppName("pog app");
+    Core::setVulkanVersion(VK_VERSION_1_4);
 
     window.title = "pog";
     window.open();
@@ -11,7 +15,8 @@ void fsx::init() {
 
 void fsx::loop() {
 
-    
+    if (Input::keyPressed(Input::Key::F))
+        Utils::toggle(&window.borderless);
 
 }
 

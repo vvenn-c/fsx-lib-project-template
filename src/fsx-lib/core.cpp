@@ -1,3 +1,12 @@
+#include <vector>
+
+#include <vulkan/vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+
+#define VOLK_IMPLEMENTATION
+#include <Volk/volk.h>
+
 #include "fsx.hpp"
 
 void fsx::Core::initSDL() {
@@ -12,7 +21,8 @@ void fsx::Core::initSDL() {
 
 void fsx::Core::initVulkan() {
 
-
+    if (!fsx::Core::createInstance())
+        throw std::runtime_error("failed to create vulkan instance");
 
 }
 
@@ -59,5 +69,80 @@ void fsx::Core::mainLoop() {
 void fsx::Core::cleanup() {
 
     
+
+}
+
+bool fsx::Core::createInstance() {
+
+    VkApplicationInfo appInfo {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = appName_,
+        .apiVersion = vulkanVersion_
+    };
+
+    uint32_t extensionCount = 0;
+    char const* const* instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+    std::vector<const char*> requestedExtensions = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+
+    for (int i = 0; i < extensionCount; i++)
+        requestedExtensions.push_back(instanceExtensions[i]);
+
+    Utils::log("requested extensions: {}", requestedExtensions.size());
+    for (auto &extension : requestedExtensions)
+        Utils::log(" |- {}", extension);
+
+    std::vector<const char*> requestedLayers = { 
+        "VK_LAYER_KHRONOS_validation" 
+    };
+
+    Utils::log("requested layers: {}", requestedLayers.size());
+    for (auto &layer : requestedLayers)
+        Utils::log(" |- {}", layer);
+
+    VkDebugUtilsMessengerCreateInfoEXT debugInfo {
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+        .pfnUserCallback = debugCallback
+    };
+
+    VkInstanceCreateInfo instanceCI {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext = &debugInfo,
+        .pApplicationInfo = &appInfo,
+        .enabledLayerCount = static_cast<uint32_t>(requestedLayers.size()),
+        .ppEnabledLayerNames = requestedLayers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(requestedExtensions.size()),
+        .ppEnabledExtensionNames = requestedExtensions.data()
+    };
+
+    volkInitialize();
+
+    if (Utils::checkResult(
+        vkCreateInstance(&instanceCI, nullptr, &vulkanInstance_)
+    ) != VK_SUCCESS) return false;
+    else {
+
+        volkLoadInstance(vulkanInstance_);
+        return true;
+
+    }
+
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL fsx::Core::debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    void *pUserData
+) {
+
+    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        std::println(stderr, "validation layer: {}", pCallbackData->pMessage);
+
+    return VK_FALSE;
 
 }
