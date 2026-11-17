@@ -3,93 +3,88 @@
 
 #include "fsx.hpp"
 
-void fsx::Window::open() {
+fsx::Window::Window() {
 
-    if (std::ranges::contains(openWindows, this) || windowObject_) {
-
-        Utils::showWarning(
-            ".open() was called on window \"{}\", but it was already open. "
-            "ignoring the function call.", title
-        );
-        
-        return;
-
-    }
-
-    windowObject_ = SDL_CreateWindow(title, width, height, SDL_WINDOW_VULKAN);
+    windowObject_ = SDL_CreateWindow(
+        "", 1080, 720, 
+        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
+    );
 
     if (!windowObject_)
-        Utils::showWarning("failed to create SDL window object for window \"{}\".", title);
-    else Utils::log("opened window \"{}\"", title);
+        Utils::showWarning("failed to create SDL window object for window \"{}\".", getTitle());
 
     ID_ = static_cast<uint32_t>(SDL_GetWindowID(windowObject_));
     openWindows.push_back(this);
 
 }
 
-// polls basic window related events like resizing and stuff
-// also updates the window properties owned by the fsx::Window object
 void fsx::Window::pollEvents() {
 
     for (auto &event : fsx::events) {
         if (event.window.windowID == ID_) {
 
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
-                close();
-
-            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-
-                int w, h;
-                SDL_GetWindowSizeInPixels(windowObject_, &w, &h);
-                width = static_cast<uint32_t>(w);
-                height = static_cast<uint32_t>(h);
-
-            }
+                destroy();
 
         }
     }
 
-    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE) resizable = true;
-    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN) fullscreen = true;
-    if (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS) borderless = true;
-
 }
 
-// fetches all window properties from the SDL window object and applies them
-// to the fsx::Window object to make sure they are in sync
-// must be called after the fsx::loop() to allow for the 
-// properties to be modified on a per frame basis
-void fsx::Window::applyProperties() {
+void fsx::Window::destroy() {
 
-    if (title != SDL_GetWindowTitle(windowObject_))
-        SDL_SetWindowTitle(windowObject_, title);
-
-    int w, h;
-    SDL_GetWindowSizeInPixels(windowObject_, &w, &h);
-    if (width != w || height != h)
-        SDL_SetWindowSize(windowObject_, width, height);
-
-    if (resizable != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE))
-        SDL_SetWindowResizable(windowObject_, resizable);
-
-    if (fullscreen != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN))
-        SDL_SetWindowFullscreen(windowObject_, fullscreen);
-
-    if (borderless != (SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS))
-        SDL_SetWindowBordered(windowObject_, !borderless);
-
-}
-
-void fsx::Window::close() {
+    Utils::log("closed window \"{}\"", getTitle());
 
     SDL_DestroyWindow(windowObject_);
     std::erase(openWindows, this);
 
-    Utils::log("closed window \"{}\"", title);
-
 }
 
-// the deconstructor calls close() to ensure that the window pointer that 
+void fsx::Window::setTitle(const char* title) {
+    SDL_SetWindowTitle(windowObject_, title);
+}
+
+void fsx::Window::setSize(unsigned int width, unsigned int height) {
+    SDL_SetWindowSize(windowObject_, width, height);
+}
+
+void fsx::Window::setResizable(bool resizable) {
+    SDL_SetWindowResizable(windowObject_, resizable);
+}
+
+void fsx::Window::setFullscreen(bool fullscreen) {
+    SDL_SetWindowFullscreen(windowObject_, fullscreen);
+}
+
+void fsx::Window::setBorderless(bool borderless) {
+    SDL_SetWindowBordered(windowObject_, !borderless);
+}
+
+std::string fsx::Window::getTitle() {
+    return SDL_GetWindowTitle(windowObject_);
+}
+
+int fsx::Window::getWidth() {
+    int w; SDL_GetWindowSizeInPixels(windowObject_, &w, nullptr); return w;
+}
+
+int fsx::Window::getHeight() {
+    int h; SDL_GetWindowSizeInPixels(windowObject_, nullptr, &h); return h;
+}
+
+bool fsx::Window::getResizable() {
+    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE;
+}
+
+bool fsx::Window::getFullscreen() {
+    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN;
+}
+
+bool fsx::Window::getBorderless() {
+    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS;
+}
+
+// the deconstructor calls destroy() to ensure that the window pointer that 
 // allows access to all instances of windows to the rest of the library
 // does not outlast the actual window.
 fsx::Window::~Window() {
@@ -97,12 +92,12 @@ fsx::Window::~Window() {
     if (openWindows.size() > 0) {
 
         Utils::showWarning(
-            "window \"{}\" was destroyed without .close() or user input. "
+            "window \"{}\" was destroyed without .destroy() or user input. "
             "this can happen if the variable holding the window goes out of scope. "
-            "make sure the window is not a local variable.", title
+            "make sure the window is not a local variable.", getTitle()
         );
 
-        close();
+        destroy();
 
     }
 

@@ -3,17 +3,16 @@ using namespace fsx;
 
 Window window;
 
+
 void fsx::init() {
 
-    window.title = "pog";
-    window.open();
+    window.setTitle("poggers");
 
 }
 
 void fsx::loop() {
 
-    auto pos = Input::getMousePos();
-    std::println("{}, {}", pos.x, pos.y);
+
 
 }
 

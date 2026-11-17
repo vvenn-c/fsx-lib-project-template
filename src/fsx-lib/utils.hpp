@@ -10,8 +10,6 @@ class fsx::Utils {
     
 public:
 
-    Utils() = delete;
-
     template <typename... Args>
     static void log(std::format_string<Args...> fmt, Args&&... args) {
         std::println("[fsx-lib] {}", std::format(fmt, std::forward<Args>(args)...));
