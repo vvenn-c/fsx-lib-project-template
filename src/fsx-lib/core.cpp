@@ -20,8 +20,12 @@ void fsx::Core::initSDL() {
 
 void fsx::Core::initVulkan() {
 
-    if (!createInstance())
-        throw std::runtime_error("failed to create vulkan instance");
+    Utils::log("beginning vulkan initialization");
+
+    createInstance();
+    createSurfaces(); // for each window
+
+    Utils::log("finished vulkan initialization");
 
 }
 
@@ -49,7 +53,7 @@ void fsx::Core::mainLoop() {
         while (SDL_PollEvent(&e)) 
             fsx::events.push_back(e);
 
-        Input::mouseStates = SDL_GetMouseState(nullptr, nullptr);
+        Input::mouseStates = SDL_GetMouseState(&Input::mousePos.x, &Input::mousePos.y);
 
         for (auto *window : Window::openWindows)
             window->pollEvents(); // poll window events for every instance of window
@@ -71,7 +75,7 @@ void fsx::Core::cleanup() {
 
 }
 
-bool fsx::Core::createInstance() {
+void fsx::Core::createInstance() {
 
     Core::appName_ = "fsx-lib application";
     Core::vulkanVersion_ = VK_API_VERSION_1_4;
@@ -124,12 +128,31 @@ bool fsx::Core::createInstance() {
     volkInitialize();
 
     if (Utils::checkResult(
-        vkCreateInstance(&instanceCI, nullptr, &vulkanInstance_)
-    ) != VK_SUCCESS) return false;
+        vkCreateInstance(&instanceCI, nullptr, &vulkanInstance_)) != VK_SUCCESS
+    ) {
+        throw std::runtime_error("failed to create vulkan instance");
+    }
     else {
 
         volkLoadInstance(vulkanInstance_);
-        return true;
+        Utils::log("created vulkan instance");
+
+    }
+
+}
+
+// not sure if this should throw.
+// because if there are multiple windows, and only 1 fails, i don't think that
+// it should halt the entire program..
+void fsx::Core::createSurfaces() {
+
+    for (auto *window : Window::openWindows) {
+
+        bool result = SDL_Vulkan_CreateSurface(window->windowObject_, vulkanInstance_, nullptr, &window->surface_);
+        if (result == false)
+            Utils::showError("failed to create vulkan surface for window \"{}\"", window->title);
+        else
+            Utils::log("created vulkan surface for window \"{}\"", window->title);
 
     }
 

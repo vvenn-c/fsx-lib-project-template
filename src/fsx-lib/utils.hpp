@@ -53,4 +53,6 @@ public:
         else *thing = true;
     }
 
+private: Utils() = delete;
+
 };

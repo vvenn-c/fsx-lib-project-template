@@ -12,8 +12,8 @@ void fsx::init() {
 
 void fsx::loop() {
 
-    if (Input::keyPressed(Input::Key::F))
-        Utils::toggle(&window.borderless);
+    auto pos = Input::getMousePos();
+    std::println("{}, {}", pos.x, pos.y);
 
 }
 

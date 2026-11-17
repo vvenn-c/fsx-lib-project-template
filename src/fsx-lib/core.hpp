@@ -6,8 +6,6 @@ class fsx::Core {
 
 public:
 
-    Core() = delete;
-
     static void initSDL();
     static void initVulkan();
     static void mainLoop();
@@ -21,7 +19,8 @@ private:
     static inline VkInstance vulkanInstance_;
 
     // vulkan init helpers
-    static bool createInstance();
+    static void createInstance();
+    static void createSurfaces();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -29,5 +28,7 @@ private:
         const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
         void *pUserData
     );
+
+    Core() = delete;
 
 };

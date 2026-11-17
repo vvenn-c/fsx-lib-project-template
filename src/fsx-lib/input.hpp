@@ -1,14 +1,13 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
 
 #include "fsx.hpp"
 
 class fsx::Input {
 
 public:
-
-    Input() = delete;
 
     enum class Key : uint8_t {
 
@@ -149,6 +148,8 @@ public:
     static bool getMouseState(Mouse button);
     static bool mouseButtonReleased(Mouse button);
 
+    static glm::vec2 getMousePos() { return mousePos; }
+
     // TODO: handle mouse scrolling
     // needa figure out how that works tho
     // also mouse position.
@@ -159,5 +160,8 @@ private:
 
     static inline const bool *keyStates;
     static inline SDL_MouseButtonFlags mouseStates;
+    static inline glm::vec2 mousePos;
+
+    Input() = delete;
 
 };

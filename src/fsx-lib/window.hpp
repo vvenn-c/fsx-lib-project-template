@@ -3,12 +3,11 @@
 #include <vector>
 #include <cstdint>
 #include <SDL3/SDL.h>
+#include <vulkan/vulkan.h>
 
 class fsx::Window {
 
 public:
-
-    ~Window();
 
     const char* title = "";
     uint32_t width = 1080;
@@ -36,7 +35,11 @@ private:
     SDL_Window* windowObject_;
     uint32_t ID_;
 
+    VkSurfaceKHR surface_;
+
     void pollEvents();
     void applyProperties();
+
+    ~Window();
 
 };

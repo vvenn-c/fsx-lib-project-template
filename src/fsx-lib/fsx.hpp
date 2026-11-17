@@ -33,11 +33,10 @@ int fsx::run() {
 
     try {
 
-        fsx::Core::initSDL();
-        fsx::Core::initVulkan();
-
         fsx::init();
 
+        fsx::Core::initSDL();
+        fsx::Core::initVulkan();
         fsx::Core::mainLoop();
         fsx::Core::cleanup();
 
