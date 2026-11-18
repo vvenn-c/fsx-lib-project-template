@@ -35,6 +35,7 @@ int fsx::run() {
 
         fsx::init();
 
+        // so... no headless? :)
         if (Window::openWindows.size() > 0) {
 
             fsx::Core::initSDL();
