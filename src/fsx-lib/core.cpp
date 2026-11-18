@@ -24,6 +24,7 @@ void fsx::Core::initVulkan() {
 
     createInstance();
     createSurfaces(); // for each window
+    findPhysicalDevice();
 
     Utils::log("finished vulkan initialization");
 
@@ -44,12 +45,14 @@ void fsx::Core::mainLoop() {
         while (SDL_PollEvent(&e)) 
             fsx::events.push_back(e);
 
+        for (auto &window : Window::openWindows) {
+            if (window->pollEvent(Window::Event::CLOSE_REQUESTED))
+                window->destroy();
+        }
+
         // get mouse button states and mouse position relative to window
         // keyboard states don't need to be called every frame so they're in Core::initSDL()
         Input::mouseStates = SDL_GetMouseState(&Input::mousePos.x, &Input::mousePos.y);
-
-        for (auto *window : Window::openWindows)
-            window->pollEvents(); // poll window events for every instance of window
 
         // fsx::loop()
         fsx::loop();
@@ -60,7 +63,8 @@ void fsx::Core::mainLoop() {
 
 void fsx::Core::cleanup() {
 
-    
+    volkFinalize();
+    SDL_Quit();
 
 }
 
@@ -142,6 +146,51 @@ void fsx::Core::createSurfaces() {
             Utils::showError("failed to create vulkan surface for window \"{}\"", window->getTitle());
         else
             Utils::log("created vulkan surface for window \"{}\"", window->getTitle());
+
+    }
+
+}
+
+void fsx::Core::findPhysicalDevice() {
+
+    uint32_t physicalDeviceCount = 0;
+    vkEnumeratePhysicalDevices(vulkanInstance_, &physicalDeviceCount, nullptr);
+
+    std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
+    vkEnumeratePhysicalDevices(vulkanInstance_, &physicalDeviceCount, physicalDevices.data());
+
+    VkPhysicalDeviceProperties2 deviceProperties{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2
+    };
+
+    Utils::log("found physical devices:");
+    for (auto &device : physicalDevices) {
+
+        vkGetPhysicalDeviceProperties2(device, &deviceProperties);
+        Utils::log(" |- {}", deviceProperties.properties.deviceName);
+
+    }
+
+    for (auto &device : physicalDevices) {
+
+        vkGetPhysicalDeviceProperties2(device, &deviceProperties);
+        if (deviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+            physicalDevice_ = device;
+            break;
+        }
+
+    }
+
+    // if no discrete device found, pick the first one we got
+    if (physicalDevices.size() > 0)
+        physicalDevice_ = physicalDevices[0];
+
+    if (physicalDevice_ == nullptr)
+        throw std::runtime_error("failed to find suitable physical device");
+    else {
+        
+        vkGetPhysicalDeviceProperties2(physicalDevice_, &deviceProperties);
+        Utils::log("selected physical device: {}", deviceProperties.properties.deviceName);
 
     }
 

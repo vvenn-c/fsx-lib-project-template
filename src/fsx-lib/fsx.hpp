@@ -9,8 +9,8 @@ namespace fsx {
     class Input;
     class Window;
     class Core;
-    class Shaders;
-    class Primitives;
+    class Shader;
+    class Primitive;
     class Camera;
     class UI;
 
@@ -35,10 +35,14 @@ int fsx::run() {
 
         fsx::init();
 
-        fsx::Core::initSDL();
-        fsx::Core::initVulkan();
-        fsx::Core::mainLoop();
-        fsx::Core::cleanup();
+        if (Window::openWindows.size() > 0) {
+
+            fsx::Core::initSDL();
+            fsx::Core::initVulkan();
+            fsx::Core::mainLoop();
+            fsx::Core::cleanup();
+
+        }
 
         fsx::exit();
 

@@ -1,12 +1,12 @@
 #include "fsx-lib/fsx.hpp"
 using namespace fsx;
+using namespace glm;
 
 Window window;
 
-
 void fsx::init() {
 
-    window.setTitle("poggers");
+    window.setTitle("my-project");
 
 }
 

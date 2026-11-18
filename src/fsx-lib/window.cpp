@@ -6,28 +6,30 @@
 fsx::Window::Window() {
 
     windowObject_ = SDL_CreateWindow(
-        "", 1080, 720, 
+        "untitled", 1080, 720, 
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
     );
 
     if (!windowObject_)
-        Utils::showWarning("failed to create SDL window object for window \"{}\".", getTitle());
+        Utils::showWarning("SDL failed to create a window object");
 
     ID_ = static_cast<uint32_t>(SDL_GetWindowID(windowObject_));
     openWindows.push_back(this);
 
 }
 
-void fsx::Window::pollEvents() {
+bool fsx::Window::pollEvent(Event windowEvent) {
 
     for (auto &event : fsx::events) {
         if (event.window.windowID == ID_) {
 
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
-                destroy();
+            if (event.type == static_cast<int>(windowEvent))
+                return true;
 
         }
     }
+
+    return false;
 
 }
 
@@ -40,49 +42,20 @@ void fsx::Window::destroy() {
 
 }
 
-void fsx::Window::setTitle(const char* title) {
-    SDL_SetWindowTitle(windowObject_, title);
-}
+// setters
+void fsx::Window::setTitle(const char* title) { SDL_SetWindowTitle(windowObject_, title); }
+void fsx::Window::setSize(unsigned int width, unsigned int height) { SDL_SetWindowSize(windowObject_, width, height); }
+void fsx::Window::setResizable(bool resizable) { SDL_SetWindowResizable(windowObject_, resizable); }
+void fsx::Window::setFullscreen(bool fullscreen) { SDL_SetWindowFullscreen(windowObject_, fullscreen); }
+void fsx::Window::setBorderless(bool borderless) { SDL_SetWindowBordered(windowObject_, !borderless); }
 
-void fsx::Window::setSize(unsigned int width, unsigned int height) {
-    SDL_SetWindowSize(windowObject_, width, height);
-}
-
-void fsx::Window::setResizable(bool resizable) {
-    SDL_SetWindowResizable(windowObject_, resizable);
-}
-
-void fsx::Window::setFullscreen(bool fullscreen) {
-    SDL_SetWindowFullscreen(windowObject_, fullscreen);
-}
-
-void fsx::Window::setBorderless(bool borderless) {
-    SDL_SetWindowBordered(windowObject_, !borderless);
-}
-
-std::string fsx::Window::getTitle() {
-    return SDL_GetWindowTitle(windowObject_);
-}
-
-int fsx::Window::getWidth() {
-    int w; SDL_GetWindowSizeInPixels(windowObject_, &w, nullptr); return w;
-}
-
-int fsx::Window::getHeight() {
-    int h; SDL_GetWindowSizeInPixels(windowObject_, nullptr, &h); return h;
-}
-
-bool fsx::Window::getResizable() {
-    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE;
-}
-
-bool fsx::Window::getFullscreen() {
-    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN;
-}
-
-bool fsx::Window::getBorderless() {
-    return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS;
-}
+// getters
+std::string fsx::Window::getTitle() { return SDL_GetWindowTitle(windowObject_); }
+int fsx::Window::getWidth() { int w; SDL_GetWindowSizeInPixels(windowObject_, &w, nullptr); return w; }
+int fsx::Window::getHeight() { int h; SDL_GetWindowSizeInPixels(windowObject_, nullptr, &h); return h; }
+bool fsx::Window::getResizable() { return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_RESIZABLE; }
+bool fsx::Window::getFullscreen() { return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_FULLSCREEN; }
+bool fsx::Window::getBorderless() { return SDL_GetWindowFlags(windowObject_) & SDL_WINDOW_BORDERLESS; }
 
 // the deconstructor calls destroy() to ensure that the window pointer that 
 // allows access to all instances of windows to the rest of the library
