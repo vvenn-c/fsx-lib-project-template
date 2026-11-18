@@ -8,6 +8,46 @@
 
 #include "fsx.hpp"
 
+int fsx::Core::run() {
+
+    try {
+
+        fsx::init();
+
+        if (!appStarted_) {
+
+            appStarted_ = true;
+
+            initSDL();
+            initVulkan();
+            mainLoop();
+            cleanup();
+
+        } else {
+
+            Utils::showError(
+                "fsx::Core::run() was called multiple times. "
+                "this function should only be called once "
+                "inside the main function."
+            );
+
+            // can't use throw to reliably terminate in case of a nested call.
+            // so having to resort to violence here..
+            std::exit(EXIT_FAILURE);
+
+        }
+
+        fsx::exit();
+
+    } catch (const std::exception &e) {
+
+        fsx::Utils::showError("{}", e.what());
+        return EXIT_FAILURE;
+
+    } return EXIT_SUCCESS;
+
+}
+
 void fsx::Core::initSDL() {
 
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -32,18 +72,18 @@ void fsx::Core::initVulkan() {
 
 void fsx::Core::mainLoop() {
 
-    while (!fsx::shouldAppClose) {
+    while (!shouldAppClose_) {
 
         if (Window::openWindows.empty()) {
             Utils::log("all windows closed, terminating application..");
-            fsx::shouldAppClose = true;
+            shouldAppClose_ = true;
         }
 
         // call SDL poll events and store them in a vector
-        fsx::events.clear();
+        events_.clear();
         SDL_Event e;
         while (SDL_PollEvent(&e)) 
-            fsx::events.push_back(e);
+            events_.push_back(e);
 
         for (auto &window : Window::openWindows) {
             if (window->pollEvent(Window::Event::CLOSE_REQUESTED))

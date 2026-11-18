@@ -6,19 +6,28 @@ class fsx::Core {
 
 public:
 
-    // TODO: buddy these should NOT be public are you dumb
-    static void initSDL();
-    static void initVulkan();
-    static void mainLoop();
-    static void cleanup();
+    static int run();
 
 private:
+
+    friend class Window;
+    friend class Input;
+
+    static inline bool appStarted_ = false;
+    static inline bool shouldAppClose_ = false;
+    static inline std::vector<SDL_Event> events_;
 
     static inline const char *appName_;
     static inline uint32_t vulkanVersion_;
 
     static inline VkInstance vulkanInstance_ = nullptr;
     static inline VkPhysicalDevice physicalDevice_ = nullptr;
+
+    // main
+    static void initSDL();
+    static void initVulkan();
+    static void mainLoop();
+    static void cleanup();
 
     // vulkan init helpers
     static void createInstance();

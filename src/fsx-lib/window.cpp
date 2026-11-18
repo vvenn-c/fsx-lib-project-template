@@ -20,7 +20,7 @@ fsx::Window::Window() {
 
 bool fsx::Window::pollEvent(Event windowEvent) {
 
-    for (auto &event : fsx::events) {
+    for (auto &event : Core::events_) {
         if (event.window.windowID == ID_) {
 
             if (event.type == static_cast<int>(windowEvent))

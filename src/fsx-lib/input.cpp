@@ -3,7 +3,7 @@
 bool fsx::Input::keyPressed(Key key) {
 
     int scancode = static_cast<int>(key);
-    for (auto &event : fsx::events) {
+    for (auto &event : Core::events_) {
 
         if (event.type == SDL_EVENT_KEY_DOWN) {
             if (event.key.scancode == scancode)
@@ -23,7 +23,7 @@ bool fsx::Input::getKeyState(Key key) {
 bool fsx::Input::keyReleased(Key key) {
 
     int scancode = static_cast<int>(key);
-    for (auto &event : fsx::events) {
+    for (auto &event : Core::events_) {
 
         if (event.type == SDL_EVENT_KEY_UP) {
             if (event.key.scancode == scancode)
@@ -39,7 +39,7 @@ bool fsx::Input::keyReleased(Key key) {
 bool fsx::Input::mouseButtonPressed(Mouse button) {
 
     int scancode = static_cast<int>(button);
-    for (auto &event : fsx::events) {
+    for (auto &event : Core::events_) {
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             if (event.button.button == scancode)
@@ -62,7 +62,7 @@ bool fsx::Input::getMouseState(Mouse button) {
 bool fsx::Input::mouseButtonReleased(Mouse button) {
 
     int scancode = static_cast<int>(button);
-    for (auto &event : fsx::events) {
+    for (auto &event : Core::events_) {
 
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             if (event.button.button == scancode)

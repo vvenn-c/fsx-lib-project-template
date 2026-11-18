@@ -2,7 +2,7 @@
 using namespace fsx;
 using namespace glm;
 
-Window window;
+fsx::Window window;
 
 void fsx::init() {
 
@@ -11,7 +11,7 @@ void fsx::init() {
 }
 
 void fsx::loop() {
-
+    
 
 
 }
@@ -22,8 +22,4 @@ void fsx::exit() {
 
 }
 
-int main() {
-
-    fsx::run();
-
-}
+int main() { return Core::run(); }
