@@ -14,12 +14,14 @@ public:
 
     void destroy();
 
+    // setters
     void setTitle(const char* title);
     void setSize(unsigned int width, unsigned int height);
     void setResizable(bool resizable);
     void setFullscreen(bool fullscreen);
     void setBorderless(bool borderless);
 
+    // getters
     std::string getTitle();
     int getWidth(), getHeight();
     bool getResizable(), getFullscreen(), getBorderless();

@@ -65,6 +65,7 @@ void fsx::Core::initVulkan() {
     createInstance();
     createSurfaces(); // for each window
     findPhysicalDevice();
+    checkFormatsSupported(); // for each window's surface
 
     Utils::log("finished vulkan initialization");
 
@@ -79,7 +80,6 @@ void fsx::Core::mainLoop() {
             shouldAppClose_ = true;
         }
 
-        // call SDL poll events and store them in a vector
         events_.clear();
         SDL_Event e;
         while (SDL_PollEvent(&e)) 
@@ -94,7 +94,6 @@ void fsx::Core::mainLoop() {
         // keyboard states don't need to be called every frame so they're in Core::initSDL()
         Input::mouseStates = SDL_GetMouseState(&Input::mousePos.x, &Input::mousePos.y);
 
-        // fsx::loop()
         fsx::loop();
 
     }
@@ -109,9 +108,6 @@ void fsx::Core::cleanup() {
 }
 
 void fsx::Core::createInstance() {
-
-    Core::appName_ = "fsx-lib application";
-    Core::vulkanVersion_ = VK_API_VERSION_1_4;
 
     VkApplicationInfo appInfo {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -179,18 +175,25 @@ void fsx::Core::createInstance() {
 // it should halt the entire program..
 void fsx::Core::createSurfaces() {
 
-    for (auto *window : Window::openWindows) {
+    for (auto &window : Window::openWindows) {
 
         bool result = SDL_Vulkan_CreateSurface(window->windowObject_, vulkanInstance_, nullptr, &window->surface_);
-        if (result == false)
-            Utils::showError("failed to create vulkan surface for window \"{}\"", window->getTitle());
-        else
+        if (result == false) {
+
+            throw std::runtime_error(std::format(
+                "failed to create vulkan surface for window \"{}\"", window->getTitle()
+            ));
+
+        } else
             Utils::log("created vulkan surface for window \"{}\"", window->getTitle());
 
     }
 
 }
 
+// finds the first discrete GPU that it finds
+// if there isn't one, it instead selects the first GPU that it found
+// throws if no GPU was found at all
 void fsx::Core::findPhysicalDevice() {
 
     uint32_t physicalDeviceCount = 0;
@@ -222,7 +225,7 @@ void fsx::Core::findPhysicalDevice() {
     }
 
     // if no discrete device found, pick the first one we got
-    if (physicalDevices.size() > 0)
+    if (physicalDevice_ == nullptr && physicalDevices.size() > 0)
         physicalDevice_ = physicalDevices[0];
 
     if (physicalDevice_ == nullptr)
@@ -231,6 +234,41 @@ void fsx::Core::findPhysicalDevice() {
         
         vkGetPhysicalDeviceProperties2(physicalDevice_, &deviceProperties);
         Utils::log("selected physical device: {}", deviceProperties.properties.deviceName);
+
+    }
+
+}
+
+// makes sure that the selected GPU supports the format
+void fsx::Core::checkFormatsSupported() {
+
+    for (auto &window : Window::openWindows) {
+
+        uint32_t formatCount = 0;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, window->surface_, &formatCount, nullptr);
+
+        std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, window->surface_, &formatCount, surfaceFormats.data());
+
+        bool formatFound = false;
+        for (const auto &surfaceFormat : surfaceFormats) {
+
+            if (surfaceFormat.format == swapchainFormat_) {
+                formatFound = true;
+                break;
+            }
+
+        }
+
+        if (formatFound)
+            Utils::log("window \"{}\" surface supports swapchain format", window->getTitle());
+        else {
+
+            throw std::runtime_error(std::format(
+                "window \"{}\" surface does not support swapchain format", window->getTitle()
+            ));
+
+        }
 
     }
 

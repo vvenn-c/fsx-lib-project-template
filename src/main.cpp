@@ -2,11 +2,11 @@
 using namespace fsx;
 using namespace glm;
 
-fsx::Window window;
+Window window;
 
 void fsx::init() {
 
-    window.setTitle("my-project");
+    window.setTitle("poggers");
 
 }
 
