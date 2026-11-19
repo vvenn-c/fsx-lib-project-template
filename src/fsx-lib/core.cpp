@@ -8,20 +8,38 @@
 
 #include "fsx.hpp"
 
-int fsx::Core::run() {
+int fsx::Core::run(void (*init)(), void (*loop)(), void (*exit)()) {
+
+    if (!init && !loop && !exit) {
+
+        Utils::showError(
+            "no callbacks provided. can't do anything.. "
+            "provide callbacks to the fsx::Core::run() function like so: "
+            "run(init, loop, exit). "
+            "the first callback is called once at the start of the application. "
+            "the second callback is called once per frame. "
+            "the third callback is called once at the end of the application."
+        );
+
+        return EXIT_FAILURE;
+
+    }
 
     try {
-
-        fsx::init();
 
         if (!appStarted_) {
 
             appStarted_ = true;
 
-            initSDL();
-            initVulkan();
-            mainLoop();
-            cleanup();
+            if (init != nullptr) init();
+
+
+                initSDL();
+                initVulkan();
+                mainLoop(loop);
+                cleanup();
+
+            if (exit != nullptr) exit();
 
         } else {
 
@@ -32,12 +50,11 @@ int fsx::Core::run() {
             );
 
             // can't use throw to reliably terminate in case of a nested call.
+            // (i'm not sure why)
             // so having to resort to violence here..
             std::exit(EXIT_FAILURE);
 
         }
-
-        fsx::exit();
 
     } catch (const std::exception &e) {
 
@@ -56,6 +73,14 @@ void fsx::Core::initSDL() {
 
     Input::keyStates = SDL_GetKeyboardState(nullptr);
 
+    // it seems even when mashing the keyboard and frantically moving
+    // the mouse around, the maximum events reported per frame doesn't
+    // really exceed ~20, so i'll just reserve a vector of size 32
+    // it's still a vector in case i somehow get more events.
+    // i don't know whether a stack allocation instead is worth it, so....
+    // dynamic arrays babyyyyyyyyy
+    events_.reserve(32);
+
 }
 
 void fsx::Core::initVulkan() {
@@ -65,13 +90,13 @@ void fsx::Core::initVulkan() {
     createInstance();
     createSurfaces(); // for each window
     findPhysicalDevice();
-    checkFormatsSupported(); // for each window's surface
+    checkSurfaceFormats(); // for each window's surface
 
     Utils::log("finished vulkan initialization");
 
 }
 
-void fsx::Core::mainLoop() {
+void fsx::Core::mainLoop(void (*loop)()) {
 
     while (!shouldAppClose_) {
 
@@ -82,7 +107,7 @@ void fsx::Core::mainLoop() {
 
         events_.clear();
         SDL_Event e;
-        while (SDL_PollEvent(&e)) 
+        while (SDL_PollEvent(&e))
             events_.push_back(e);
 
         for (auto &window : Window::openWindows) {
@@ -94,7 +119,7 @@ void fsx::Core::mainLoop() {
         // keyboard states don't need to be called every frame so they're in Core::initSDL()
         Input::mouseStates = SDL_GetMouseState(&Input::mousePos.x, &Input::mousePos.y);
 
-        fsx::loop();
+        if (loop != nullptr) loop();
 
     }
 
@@ -240,7 +265,7 @@ void fsx::Core::findPhysicalDevice() {
 }
 
 // makes sure that the selected GPU supports the format
-void fsx::Core::checkFormatsSupported() {
+void fsx::Core::checkSurfaceFormats() {
 
     for (auto &window : Window::openWindows) {
 

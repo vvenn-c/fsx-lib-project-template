@@ -152,7 +152,6 @@ public:
 
     // TODO: handle mouse scrolling
     // needa figure out how that works tho
-    // also mouse position.
 
 private:
 

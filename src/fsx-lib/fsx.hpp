@@ -14,10 +14,6 @@ namespace fsx {
     class Camera;
     class UI;
 
-    void init();
-    void loop();
-    void exit();
-
 };
 
 #include "utils.hpp"

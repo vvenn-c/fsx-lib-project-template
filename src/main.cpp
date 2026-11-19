@@ -4,23 +4,19 @@ using namespace glm;
 
 Window window;
 
-void fsx::init() {
+// TODO: Window::openWindows need not be public
+
+void init() {
 
     Utils::setLogLevel(Utils::LogLevel::VERBOSE);
     window.setTitle("poggers");
 
 }
 
-void fsx::loop() {
+void loop() {
+    
     
 
-
 }
 
-void fsx::exit() {
-
-
-
-}
-
-int main() { return Core::run(); }
+int main() { return Core::run(init, loop); }

@@ -25,7 +25,7 @@ public:
     std::string getTitle();
     int getWidth(), getHeight();
     bool getResizable(), getFullscreen(), getBorderless();
-    int getID() { return ID_; }
+    int getID();
 
     static inline std::vector<Window*> openWindows;
 

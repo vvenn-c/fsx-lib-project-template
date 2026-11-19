@@ -6,7 +6,7 @@ class fsx::Core {
 
 public:
 
-    static int run();
+    static int run(void (*init)() = nullptr, void (*loop)() = nullptr, void (*exit)() = nullptr);
 
 private:
 
@@ -29,14 +29,14 @@ private:
     // main
     static void initSDL();
     static void initVulkan();
-    static void mainLoop();
+    static void mainLoop(void (*loop)() = nullptr);
     static void cleanup();
 
     // vulkan init helpers
     static void createInstance();
     static void createSurfaces();
     static void findPhysicalDevice();
-    static void checkFormatsSupported();
+    static void checkSurfaceFormats();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
