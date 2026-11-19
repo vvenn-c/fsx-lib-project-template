@@ -6,6 +6,7 @@ Window window;
 
 void fsx::init() {
 
+    Utils::setLogLevel(Utils::LogLevel::VERBOSE);
     window.setTitle("poggers");
 
 }

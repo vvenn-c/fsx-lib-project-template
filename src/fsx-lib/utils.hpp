@@ -10,18 +10,29 @@ class fsx::Utils {
     
 public:
 
+    enum class LogLevel {
+        NORMAL,
+        ERROR_ONLY,
+        VERBOSE
+    };
+
+    static void setLogLevel(LogLevel level) { logLevel_ = level; }
+
     template <typename... Args>
     static void log(std::format_string<Args...> fmt, Args&&... args) {
-        std::println("[fsx-lib] {}", std::format(fmt, std::forward<Args>(args)...));
+        if (logLevel_ >= LogLevel::VERBOSE)
+            std::println("[fsx-lib] {}", std::format(fmt, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
     static void showError(std::format_string<Args...> fmt, Args&&... args) {
-        std::println(stderr, "[fsx-lib] error: {}", std::format(fmt, std::forward<Args>(args)...));
+        if (logLevel_ == LogLevel::NORMAL || logLevel_ >= LogLevel::ERROR_ONLY)
+            std::println(stderr, "[fsx-lib] error: {}", std::format(fmt, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
     static void showWarning(std::format_string<Args...> fmt, Args&&... args) {
+        if (logLevel_ == LogLevel::NORMAL || logLevel_ >= LogLevel::VERBOSE)
         std::println(stderr, "[fsx-lib] warning: {}", std::format(fmt, std::forward<Args>(args)...));
     }
 
@@ -51,6 +62,9 @@ public:
         else *thing = true;
     }
 
-private: Utils() = delete;
+private: 
+
+    Utils() = delete;
+    static inline LogLevel logLevel_ = LogLevel::NORMAL;
 
 };
