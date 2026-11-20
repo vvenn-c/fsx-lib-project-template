@@ -148,7 +148,7 @@ public:
     static bool getMouseState(Mouse button);
     static bool mouseButtonReleased(Mouse button);
 
-    static glm::vec2 getMousePos() { return mousePos; }
+    static glm::vec2 getMousePos();
 
     // TODO: handle mouse scrolling
     // needa figure out how that works tho
@@ -157,9 +157,9 @@ private:
 
     friend class Core;
 
-    static inline const bool *keyStates;
-    static inline SDL_MouseButtonFlags mouseStates;
-    static inline glm::vec2 mousePos;
+    static inline const bool *keyStates_;
+    static inline SDL_MouseButtonFlags mouseStates_;
+    static inline glm::vec2 mousePos_;
 
     Input() = delete;
 

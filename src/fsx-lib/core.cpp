@@ -71,7 +71,7 @@ void fsx::Core::initSDL() {
         throw std::runtime_error("failed to initialize SDL");
     else Utils::log("SDL initialized");
 
-    Input::keyStates = SDL_GetKeyboardState(nullptr);
+    Input::keyStates_ = SDL_GetKeyboardState(nullptr);
 
     // it seems even when mashing the keyboard and frantically moving
     // the mouse around, the maximum events reported per frame doesn't
@@ -100,7 +100,7 @@ void fsx::Core::mainLoop(void (*loop)()) {
 
     while (!shouldAppClose_) {
 
-        if (Window::openWindows.empty()) {
+        if (Window::openWindows_.empty()) {
             Utils::log("all windows closed, terminating application..");
             shouldAppClose_ = true;
         }
@@ -110,14 +110,14 @@ void fsx::Core::mainLoop(void (*loop)()) {
         while (SDL_PollEvent(&e))
             events_.push_back(e);
 
-        for (auto &window : Window::openWindows) {
+        for (auto &window : Window::openWindows_) {
             if (window->pollEvent(Window::Event::CLOSE_REQUESTED))
                 window->destroy();
         }
 
         // get mouse button states and mouse position relative to window
         // keyboard states don't need to be called every frame so they're in Core::initSDL()
-        Input::mouseStates = SDL_GetMouseState(&Input::mousePos.x, &Input::mousePos.y);
+        Input::mouseStates_ = SDL_GetMouseState(&Input::mousePos_.x, &Input::mousePos_.y);
 
         if (loop != nullptr) loop();
 
@@ -200,7 +200,7 @@ void fsx::Core::createInstance() {
 // it should halt the entire program..
 void fsx::Core::createSurfaces() {
 
-    for (auto &window : Window::openWindows) {
+    for (auto &window : Window::openWindows_) {
 
         bool result = SDL_Vulkan_CreateSurface(window->windowObject_, vulkanInstance_, nullptr, &window->surface_);
         if (result == false) {
@@ -267,7 +267,7 @@ void fsx::Core::findPhysicalDevice() {
 // makes sure that the selected GPU supports the format
 void fsx::Core::checkSurfaceFormats() {
 
-    for (auto &window : Window::openWindows) {
+    for (auto &window : Window::openWindows_) {
 
         uint32_t formatCount = 0;
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, window->surface_, &formatCount, nullptr);

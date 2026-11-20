@@ -17,7 +17,7 @@ bool fsx::Input::keyPressed(Key key) {
 }
 
 bool fsx::Input::getKeyState(Key key) {
-    return keyStates[static_cast<int>(key)];
+    return keyStates_[static_cast<int>(key)];
 }
 
 bool fsx::Input::keyReleased(Key key) {
@@ -55,7 +55,7 @@ bool fsx::Input::mouseButtonPressed(Mouse button) {
 bool fsx::Input::getMouseState(Mouse button) {
 
     int scancode = static_cast<int>(button);
-    return (mouseStates & SDL_BUTTON_MASK(scancode)) != 0; 
+    return (mouseStates_ & SDL_BUTTON_MASK(scancode)) != 0; 
 
 }
 
@@ -74,3 +74,5 @@ bool fsx::Input::mouseButtonReleased(Mouse button) {
     return false;
 
 }
+
+glm::vec2 fsx::Input::getMousePos() { return mousePos_; }

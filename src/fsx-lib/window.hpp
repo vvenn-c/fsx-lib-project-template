@@ -27,8 +27,6 @@ public:
     bool getResizable(), getFullscreen(), getBorderless();
     int getID();
 
-    static inline std::vector<Window*> openWindows;
-
     enum class Event {
 
         SHOWN                  = 0x202,
@@ -72,6 +70,7 @@ private:
 
     friend class Core;
 
+    static inline std::vector<Window*> openWindows_;
     SDL_Window* windowObject_;
     uint32_t ID_;
 

@@ -20,3 +20,9 @@ namespace fsx {
 #include "input.hpp"
 #include "window.hpp"
 #include "core.hpp"
+
+// this might be a sin
+// will they come for me, 
+// in the middle of the night?
+using namespace fsx;
+using namespace glm;

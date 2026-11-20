@@ -14,7 +14,7 @@ fsx::Window::Window() {
         Utils::showWarning("SDL failed to create a window object");
 
     ID_ = static_cast<uint32_t>(SDL_GetWindowID(windowObject_));
-    openWindows.push_back(this);
+    openWindows_.push_back(this);
 
 }
 
@@ -38,7 +38,7 @@ void fsx::Window::destroy() {
     Utils::log("closed window \"{}\"", getTitle());
 
     SDL_DestroyWindow(windowObject_);
-    std::erase(openWindows, this);
+    std::erase(openWindows_, this);
 
 }
 
@@ -64,7 +64,7 @@ int fsx::Window::getID() { return ID_; }
 // does not outlast the actual window.
 fsx::Window::~Window() {
 
-    if (openWindows.size() > 0) {
+    if (openWindows_.size() > 0) {
 
         Utils::showError(
             "window \"{}\" was destroyed without .destroy() or user input. "

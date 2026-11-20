@@ -1,10 +1,6 @@
 #include "fsx-lib/fsx.hpp"
-using namespace fsx;
-using namespace glm;
 
 Window window;
-
-// TODO: Window::openWindows need not be public
 
 void init() {
 
