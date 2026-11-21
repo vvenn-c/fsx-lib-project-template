@@ -1,19 +1,19 @@
 #include "fsx-lib/fsx.hpp"
 using namespace fsx;
 
-Window window;
-
-void init() {
+int main() { 
 
     Utils::setLogLevel(Utils::LogLevel::VERBOSE);
+
+    Window window;
     window.setTitle("poggers");
 
+    while (Core::running()) {
+
+        while (Core::pollEvents());
+
+    }
+
+    return 0;
+
 }
-
-void loop() {
-
-    
-
-}
-    
-int main() { return fsx::Core::run(init, loop); }

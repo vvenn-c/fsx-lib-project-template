@@ -20,20 +20,18 @@ fsx::Window::Window() {
 
 bool fsx::Window::pollEvent(Event windowEvent) {
 
-    for (auto &event : Core::events_) {
-        if (event.window.windowID == ID_) {
+    if (Core::event_.window.windowID == ID_) {
 
-            if (event.type == static_cast<int>(windowEvent))
-                return true;
+        if (Core::event_.type == static_cast<int>(windowEvent))
+            return true;
 
-        }
     }
 
     return false;
 
 }
 
-void fsx::Window::destroy() {
+void fsx::Window::close() {
 
     Utils::log("closed window \"{}\"", getTitle());
 
@@ -43,7 +41,7 @@ void fsx::Window::destroy() {
 }
 
 // setters
-void fsx::Window::setTitle(const char* title) { SDL_SetWindowTitle(windowObject_, title); }
+void fsx::Window::setTitle(std::string title) { SDL_SetWindowTitle(windowObject_, title.c_str()); }
 void fsx::Window::setSize(unsigned int width, unsigned int height) { SDL_SetWindowSize(windowObject_, width, height); }
 void fsx::Window::setResizable(bool resizable) { SDL_SetWindowResizable(windowObject_, resizable); }
 void fsx::Window::setFullscreen(bool fullscreen) { SDL_SetWindowFullscreen(windowObject_, fullscreen); }
@@ -67,12 +65,12 @@ fsx::Window::~Window() {
     if (openWindows_.size() > 0) {
 
         Utils::showError(
-            "window \"{}\" was destroyed without .destroy() or user input. "
+            "window \"{}\" was destroyed without .close() or user input. "
             "this can happen if the variable holding the window goes out of scope. "
             "make sure the window is not a local variable.", getTitle()
         );
 
-        destroy();
+        close();
         std::exit(EXIT_FAILURE);
 
     }

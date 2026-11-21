@@ -8,59 +8,39 @@
 
 #include "fsx.hpp"
 
-int fsx::Core::run(void (*init)(), void (*loop)(), void (*exit)()) {
-
-    if (!init && !loop && !exit) {
-
-        Utils::showError(
-            "no callbacks provided. can't do anything.. "
-            "provide callbacks to the fsx::Core::run() function like so: "
-            "run(init, loop, exit). "
-            "the first callback is called once at the start of the application. "
-            "the second callback is called once per frame. "
-            "the third callback is called once at the end of the application."
-        );
-
-        return EXIT_FAILURE;
-
-    }
+bool fsx::Core::running() {
 
     try {
 
-        if (!appStarted_) {
+        if ((!appRunning_) && Window::openWindows_.size() > 0) {
 
-            appStarted_ = true;
+            appRunning_ = true;
 
-            if (init != nullptr) init();
-
-                initSDL();
-                initVulkan();
-                mainLoop(loop);
-                cleanup();
-
-            if (exit != nullptr) exit();
-
-        } else {
-
-            Utils::showError(
-                "fsx::Core::run() was called multiple times. "
-                "this function should only be called once "
-                "inside the main function."
-            );
-
-            return EXIT_FAILURE;
+            initSDL();
+            initVulkan();
 
         }
+
+        if (Window::openWindows_.empty()) {
+            Utils::log("no windows open. terminating application..");
+            appRunning_ = false;
+        }
+
+        // get mouse button states and mouse position relative to window
+        // keyboard states don't need to be called every frame so they're in Core::initSDL()
+        Input::mouseStates_ = SDL_GetMouseState(&Input::mousePos_.x, &Input::mousePos_.y);
+
+        if (!appRunning_)
+            cleanup();
 
     } catch (const std::exception &e) {
 
         fsx::Utils::showError("{}", e.what());
-        return EXIT_FAILURE;
 
-    } 
+    }
+
+    return appRunning_;
     
-    return EXIT_SUCCESS;
-
 }
 
 void fsx::Core::initSDL() {
@@ -70,13 +50,6 @@ void fsx::Core::initSDL() {
     else Utils::log("SDL initialized");
 
     Input::keyStates_ = SDL_GetKeyboardState(nullptr);
-
-    // it seems even when mashing the keyboard and frantically moving
-    // the mouse around, the maximum events reported per frame doesn't
-    // really exceed ~20, so i'll just reserve a vector of size 32
-    // it's still a vector in case i somehow get more events.
-    // i don't know whether a stack allocation instead is worth it, so....
-    events_.reserve(32);
 
 }
 
@@ -95,35 +68,18 @@ void fsx::Core::initVulkan() {
 
 }
 
-void fsx::Core::mainLoop(void (*loop)()) {
+bool fsx::Core::pollEvents() {
 
-    while (!shouldAppClose_) {
+    bool stillPolling = SDL_PollEvent(&event_);
 
-        if (Window::openWindows_.empty()) {
-            Utils::log("all windows closed, terminating application..");
-            shouldAppClose_ = true;
-            break;
-        }
-
-        events_.clear();
-        while (SDL_PollEvent(&events_.emplace_back()));
-        events_.pop_back(); // to get rid of the one extra empty event
-                            // made as a result of the while loop stop condition
-
-        // this is just to make the X close button work
-        // not sure if i should put it here or let the app explicitly define it instead
-        for (auto &window : Window::openWindows_) {
-            if (window->pollEvent(Window::Event::CLOSE_REQUESTED))
-                window->destroy();
-        }
-
-        // get mouse button states and mouse position relative to window
-        // keyboard states don't need to be called every frame so they're in Core::initSDL()
-        Input::mouseStates_ = SDL_GetMouseState(&Input::mousePos_.x, &Input::mousePos_.y);
-
-        if (loop != nullptr) loop();
-
+    // this is just to make the X close button work
+    // not sure if i should put it here or let the app explicitly define it instead
+    for (auto &window : Window::openWindows_) {
+        if (window->pollEvent(Window::Event::CLOSE_REQUESTED))
+            window->close();
     }
+
+    return stillPolling;
 
 }
 

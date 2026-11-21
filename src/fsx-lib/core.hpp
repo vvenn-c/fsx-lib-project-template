@@ -6,16 +6,16 @@ class fsx::Core {
 
 public:
 
-    static int run(void (*init)() = nullptr, void (*loop)() = nullptr, void (*exit)() = nullptr);
+    static bool running();
+    static bool pollEvents();
 
 private:
 
     friend class Window;
     friend class Input;
 
-    static inline bool appStarted_ = false;
-    static inline bool shouldAppClose_ = false;
-    static inline std::vector<SDL_Event> events_;
+    static inline bool appRunning_ = false;
+    static inline SDL_Event event_;
 
     constexpr static inline const char *appName_ = "fsx-lib application";
     const static inline uint32_t vulkanVersion_ = VK_API_VERSION_1_4;
@@ -33,7 +33,6 @@ private:
     // main
     static void initSDL();
     static void initVulkan();
-    static void mainLoop(void (*loop)() = nullptr);
     static void cleanup();
 
     // vulkan init helpers

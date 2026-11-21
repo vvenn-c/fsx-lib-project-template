@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <cstdint>
 #include <SDL3/SDL.h>
 #include <vulkan/vulkan.h>
@@ -12,10 +13,10 @@ public:
     Window();
     ~Window();
 
-    void destroy();
+    void close();
 
     // setters
-    void setTitle(const char* title);
+    void setTitle(std::string title);
     void setSize(unsigned int width, unsigned int height);
     void setResizable(bool resizable);
     void setFullscreen(bool fullscreen);
