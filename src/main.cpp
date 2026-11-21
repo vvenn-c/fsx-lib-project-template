@@ -1,4 +1,5 @@
 #include "fsx-lib/fsx.hpp"
+using namespace fsx;
 
 Window window;
 
@@ -10,9 +11,9 @@ void init() {
 }
 
 void loop() {
-    
+
     
 
 }
-
-int main() { return Core::run(init, loop); }
+    
+int main() { return fsx::Core::run(init, loop); }

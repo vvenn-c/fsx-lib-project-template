@@ -33,7 +33,6 @@ int fsx::Core::run(void (*init)(), void (*loop)(), void (*exit)()) {
 
             if (init != nullptr) init();
 
-
                 initSDL();
                 initVulkan();
                 mainLoop(loop);
@@ -49,10 +48,7 @@ int fsx::Core::run(void (*init)(), void (*loop)(), void (*exit)()) {
                 "inside the main function."
             );
 
-            // can't use throw to reliably terminate in case of a nested call.
-            // (i'm not sure why)
-            // so having to resort to violence here..
-            std::exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 
         }
 
@@ -61,7 +57,9 @@ int fsx::Core::run(void (*init)(), void (*loop)(), void (*exit)()) {
         fsx::Utils::showError("{}", e.what());
         return EXIT_FAILURE;
 
-    } return EXIT_SUCCESS;
+    } 
+    
+    return EXIT_SUCCESS;
 
 }
 
@@ -78,7 +76,6 @@ void fsx::Core::initSDL() {
     // really exceed ~20, so i'll just reserve a vector of size 32
     // it's still a vector in case i somehow get more events.
     // i don't know whether a stack allocation instead is worth it, so....
-    // dynamic arrays babyyyyyyyyy
     events_.reserve(32);
 
 }
@@ -87,10 +84,12 @@ void fsx::Core::initVulkan() {
 
     Utils::log("beginning vulkan initialization");
 
-    createInstance();
-    createSurfaces(); // for each window
-    findPhysicalDevice();
-    checkSurfaceFormats(); // for each window's surface
+        createInstance();
+        createSurfaces(); // for each window
+        findPhysicalDevice();
+        checkSurfaceFormats(); // for each window's surface
+        findGraphicsQueueIndex();
+        createLogicalDevice();
 
     Utils::log("finished vulkan initialization");
 
@@ -103,13 +102,16 @@ void fsx::Core::mainLoop(void (*loop)()) {
         if (Window::openWindows_.empty()) {
             Utils::log("all windows closed, terminating application..");
             shouldAppClose_ = true;
+            break;
         }
 
         events_.clear();
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-            events_.push_back(e);
+        while (SDL_PollEvent(&events_.emplace_back()));
+        events_.pop_back(); // to get rid of the one extra empty event
+                            // made as a result of the while loop stop condition
 
+        // this is just to make the X close button work
+        // not sure if i should put it here or let the app explicitly define it instead
         for (auto &window : Window::openWindows_) {
             if (window->pollEvent(Window::Event::CLOSE_REQUESTED))
                 window->destroy();
@@ -296,6 +298,135 @@ void fsx::Core::checkSurfaceFormats() {
         }
 
     }
+
+}
+
+void fsx::Core::findGraphicsQueueIndex() {
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice_, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties2> queueFamilyProperties(queueFamilyCount,
+        { .sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 }
+    );
+
+    vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice_, &queueFamilyCount, queueFamilyProperties.data());
+
+    for (int currentFamilyIndex = 0; currentFamilyIndex < queueFamilyProperties.size(); currentFamilyIndex++) {
+        for (const auto &window : Window::openWindows_) {
+
+            VkBool32 hasPresentSupport = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice_, currentFamilyIndex, window->surface_, &hasPresentSupport);
+
+            const auto &properties = queueFamilyProperties[currentFamilyIndex];
+            if (properties.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT && hasPresentSupport) {
+
+                Core::graphicsQueueFamilyIndex_ = currentFamilyIndex;
+                Utils::log("graphics queue family index: {}", Core::graphicsQueueFamilyIndex_);
+                return;
+
+            }
+
+        }
+    }
+
+    throw std::runtime_error("could not find graphics queue index");
+
+}
+
+void fsx::Core::createLogicalDevice() {
+
+    // query supported features
+    // this linked list is made specifically to check if certain features are available.
+    // this list won't be used for actually creating the logical device
+    VkPhysicalDeviceVulkan14Features supportedFeatures14 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+        .pNext = nullptr
+    };
+
+    VkPhysicalDeviceVulkan13Features supportedFeatures13 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = &supportedFeatures14
+    };
+
+    VkPhysicalDeviceVulkan12Features supportedFeatures12 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = &supportedFeatures13
+    };
+
+    VkPhysicalDeviceFeatures2 supportedFeatures {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &supportedFeatures12
+    };
+
+    vkGetPhysicalDeviceFeatures2(physicalDevice_, &supportedFeatures);
+
+    if (
+        !supportedFeatures13.dynamicRendering ||
+        !supportedFeatures13.synchronization2 ||
+        !supportedFeatures12.timelineSemaphore
+    ) {
+
+        throw std::runtime_error("physical device does not meet the feature requirements");
+
+    } else
+        Utils::log("physical device meets feature requirements");
+
+    // this list is the one actually being used to create the logical device
+    VkPhysicalDeviceVulkan14Features features14 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+        .pNext = nullptr
+    };
+
+    VkPhysicalDeviceVulkan13Features features13 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = &features14,
+        .synchronization2 = VK_TRUE,
+        .dynamicRendering = VK_TRUE
+    };
+
+    VkPhysicalDeviceVulkan12Features features12 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = &features13,
+        .timelineSemaphore = VK_TRUE
+    };
+
+    VkPhysicalDeviceFeatures2 features {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &features12
+    };
+
+    std::vector<float> queuePriorities = { 1.0f };
+    VkDeviceQueueCreateInfo graphicsQueueCI {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = graphicsQueueFamilyIndex_,
+        .queueCount = 1,
+        .pQueuePriorities = queuePriorities.data()
+    };
+
+    const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    VkDeviceCreateInfo deviceCI {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = &features,
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos = &graphicsQueueCI,
+        .enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
+        .ppEnabledExtensionNames = deviceExtensions.data(),
+        .pEnabledFeatures = nullptr // features struct is set in pNext (for some reason ????)
+    };
+
+    VkResult result = Utils::checkResult(
+        vkCreateDevice(physicalDevice_, &deviceCI, nullptr, &logicalDevice_)
+    );
+
+    if (result != VK_SUCCESS)
+        throw std::runtime_error("could not create logical device");
+    else
+        Utils::log("created logical device");
+
+    vkGetDeviceQueue(logicalDevice_, graphicsQueueFamilyIndex_, 0, &graphicsQueue_);
+    if (!graphicsQueue_)
+        Utils::showError("could not get the graphics queue");
 
 }
 
